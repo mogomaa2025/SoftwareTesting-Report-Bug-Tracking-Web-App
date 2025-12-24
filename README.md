@@ -109,17 +109,18 @@ The application uses a CSV file (`data/.test.csv`) to store all test cases and b
 _(Note: Replace these placeholders with actual screenshots of your application's UI)_
 
 ### Summary Dashboard
-![Summary Dashboard Placeholder](https://via.placeholder.com/800x450?text=Summary+Dashboard+Screenshot)
+<img width="1772" height="740" alt="image" src="https://github.com/user-attachments/assets/81a0c28f-0f27-4908-adc9-a8b45552df41" />
+
 *An overview of key metrics and statistics.*
 
 ### Test Cases View
-![Test Cases View Placeholder](https://via.placeholder.com/800x450?text=Test+Cases+View+Screenshot)
+<img width="1797" height="930" alt="image" src="https://github.com/user-attachments/assets/876cffa7-1534-43ef-a03f-8129016b9696" />
 *Table view of test cases with inline editing and status indicators.*
 
 ### Bug Reports View with Evidence
-![Bug Reports View Placeholder](https://via.placeholder.com/800x450?text=Bug+Reports+View+with+Evidence+Screenshot)
+<img width="1689" height="945" alt="image" src="https://github.com/user-attachments/assets/220ebc53-6df6-4daa-9863-dc96195f2251" />
 *Bug report cards showing title, description, priority, and attached evidence.*
 
 ### XLSX Export Example
-![XLSX Export Example Placeholder](https://via.placeholder.com/800x450?text=XLSX+Export+Screenshot)
+<img width="1915" height="1029" alt="image" src="https://github.com/user-attachments/assets/5eb13f50-a501-4e12-9545-b116cbbf9edd" />
 *A sample of the generated Excel report with colored cells and formatted data.*
