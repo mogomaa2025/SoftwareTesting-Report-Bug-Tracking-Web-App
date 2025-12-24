@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Software Testing Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .tab-button.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-header.active + .accordion-content {
+            max-height: 4000px; /* Adjust as needed */
+        }
+         .rotate-180 {
+            transform: rotate(180deg);
+        }
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+        .bug-card {
+             border-left-width: 4px;
+        }
+        .bug-card .bug-id {
+            border: 1px solid transparent;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .bug-card .bug-id:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+        }
+        .bug-card .bug-id:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .save-bug {
+            transition: all 0.2s ease;
+        }
+        .save-bug:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .save-testcase {
+            transition: all 0.2s ease;
+        }
+        .save-testcase:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .severity-critical {
+             border-left-color: #ef4444;
+        }
+        .severity-high {
+             border-left-color: #f97316;
+        }
+        .severity-medium {
+            border-left-color: #f59e0b;
+        }
+        .severity-low {
+            border-left-color: #3b82f6;
+        }
+        .searchable:not([style*="display: none;"]) {
+            display: table-row;
+        }
+        .searchable-card:not([style*="display: none;"]) {
+            display: block;
+        }
+        
+        /* Enhanced metric cards styling */
+        .metric-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .metric-subtitle {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            opacity: 0.8;
+        }
+        
+        /* Responsive table improvements */
+        @media (max-width: 768px) {
+            .table-container {
+                font-size: 0.75rem;
+            }
+            .table-container th,
+            .table-container td {
+                padding: 0.5rem 0.25rem;
+            }
+        }
+        
+        /* Ensure table cells don't wrap unnecessarily */
+        .table-container td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Allow specific columns to wrap when needed - especially for Arabic text */
+        .table-container td:nth-child(3),
+        .table-container td:nth-child(4),
+        .table-container td:nth-child(6),
+        .table-container td:nth-child(7) {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow: visible;
+            text-overflow: unset;
+        }
+        
+        /* Special handling for Arabic text */
+        .table-container td[contenteditable="true"] {
+            white-space: normal;
+            word-wrap: break-word;
+            overflow: visible;
+            text-overflow: unset;
+            min-height: 40px;
+        }
+        
+        /* Ensure Arabic text displays properly */
+        .table-container {
+            direction: ltr; /* Keep table direction LTR for proper column alignment */
+        }
+        
+        .table-container td {
+            direction: auto; /* Allow automatic text direction detection */
+            unicode-bidi: embed;
+        }
+        
+        /* Force table to show all columns */
+        .table-container table {
+            table-layout: fixed;
+            width: 100%;
+            min-width: 1100px; /* Increased to accommodate Arabic text and wider columns */
+        }
+        
+        /* Make sure the last columns are always visible */
+        .table-container {
+            position: relative;
+        }
+        
+        /* Add a subtle shadow to indicate scrollable content */
+        .table-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* Custom scrollbar styling */
+        .table-container::-webkit-scrollbar {
+            height: 12px;
+        }
+        
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
+        }
+        
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Touch/swipe support for mobile */
+        .table-container {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            touch-action: pan-x;
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+            .table-container {
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+            }
+            
+            .table-container table {
+                min-width: 800px; /* Much smaller for mobile */
+            }
+            
+            /* Add scroll indicators for mobile */
+            .table-container::before {
+                content: '← Swipe to see more →';
+                position: absolute;
+                top: -25px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+                padding: 4px 12px;
+                border-radius: 12px;
+                font-size: 0.75rem;
+                font-weight: 500;
+                z-index: 2;
+            }
+        }
+
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-4">
+            <h1 class="text-4xl font-bold text-gray-900">Comprehensive Software Testing Report</h1>
+            <p class="mt-2 text-lg text-gray-600">TEQAN CRM & Client Website</p>
+        </header>
+
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="relative w-full md:w-1/3">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i class="fas fa-search text-gray-400"></i>
+                </span>
+                <input type="text" id="searchInput" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Search reports...">
+            </div>
+            <div class="w-full md:w-auto flex flex-col md:flex-row gap-2">
+                <button id="importTestCases" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-upload mr-2"></i> Import Test Cases
+                </button>
+                <button id="importBugReports" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-upload mr-2"></i> Import Bug Reports
+                </button>
+                <input type="file" id="csvFileInput" class="hidden" accept=".csv">
+                <button id="exportTestCases" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-excel mr-2"></i> Export Test Cases
+                </button>
+                <button id="exportBugReports" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-excel mr-2"></i> Export Bug Reports
+                </button>
+                <button id="exportXlsx" class="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-excel mr-2"></i> Export as XLSX
+                </button>
+                <button id="saveButton" class="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i> Save Changes
+                </button>
+                <button id="migrateBugReports" class="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-shield-alt mr-2"></i> Fix
+                </button>
+            </div>
+        </div>
+
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <!-- Tabs Navigation -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                    <button class="tab-button active py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-blue-600 hover:border-blue-300" data-tab="summary">
+                        <i class="fas fa-chart-pie mr-2"></i>Summary
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-blue-600 hover:border-blue-300" data-tab="test-cases">
+                        <i class="fas fa-tasks mr-2"></i>Test Cases
+                    </button>
+                    <button class="tab-button py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-blue-600 hover:border-blue-300" data-tab="bug-reports">
+                        <i class="fas fa-bug mr-2"></i>Bug Reports
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tabs Content -->
+            <div id="tab-content">
+                <!-- Summary Tab -->
+                <div id="summary" class="tab-pane active">
+                    <div id="summaryMetrics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg text-center">
+                            <h3 id="passRate" class="text-3xl font-bold text-blue-700">0%</h3>
+                            <p class="text-blue-600 font-medium">Pass Rate</p>
+                        </div>
+                         <div class="bg-yellow-50 border border-yellow-200 p-5 rounded-lg text-center">
+                            <h3 id="bugsFound" class="text-3xl font-bold text-yellow-700">0</h3>
+                            <p class="text-yellow-600 font-medium">Bugs Found</p>
+                        </div>
+                        <div class="bg-red-50 border border-red-200 p-5 rounded-lg text-center">
+                            <h3 id="criticalBugs" class="text-3xl font-bold text-red-700">0</h3>
+                            <p class="text-red-600 font-medium">Critical Bugs</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Test Cases Tab -->
+                <div id="test-cases" class="tab-pane hidden">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <button id="migrateIds" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-sync-alt mr-2"></i>Migrate Old IDs</button>
+                            <div class="flex gap-2">
+                                <button id="addTestCase" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-plus mr-2"></i>Add Test Case</button>
+                            </div>
+                        </div>
+                        <!-- Unified Test Cases Table -->
+                        <div>
+                            <div class="accordion-header bg-gray-100 hover:bg-gray-200 p-4 rounded-lg cursor-pointer flex justify-between items-center">
+                                <h3 class="font-semibold text-lg">All Test Cases</h3>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </div>
+                            <div class="accordion-content">
+                                <!-- Pagination Controls -->
+                                <div class="flex justify-between items-center p-4 border-b">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-700">Show</span>
+                                        <select id="page-size" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                                            <option value="10">10</option>
+                                            <option value="25">25</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                        <span class="text-sm text-gray-700">per page</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button id="prev-page" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+                                        <span id="page-info" class="text-sm text-gray-700">Page 1 of 1</span>
+                                        <button id="next-page" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="p-4 border rounded-b-lg overflow-x-auto table-container" style="scrollbar-width: thin; scrollbar-color: #c1c1c1 #f1f1f1;">
+                                    <table id="test-cases-table" class="w-full text-sm text-left text-gray-500 min-w-max">
+                                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-1 py-3 w-20">Platform</th>
+                                                <th scope="col" class="px-1 py-3 w-20">Section</th>
+                                                <th scope="col" class="px-1 py-3 w-16">ID</th>
+                                                <th scope="col" class="px-1 py-3 w-40">Objective</th>
+                                                <th scope="col" class="px-1 py-3 w-32">Test Steps</th>
+                                                <th scope="col" class="px-1 py-3 w-28">Test Data</th>
+                                                <th scope="col" class="px-1 py-3 w-32">Expected Result</th>
+                                                <th scope="col" class="px-1 py-3 w-32">Actual Result</th>
+                                                <th scope="col" class="px-1 py-3 w-20">Priority</th>
+                                                <th scope="col" class="px-1 py-3 w-24">Status</th>
+                                                <th scope="col" class="px-1 py-3 w-16">Move</th>
+                                                <th scope="col" class="px-1 py-3 w-16">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- All Test cases will be loaded here dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bug Reports Tab -->
+                <div id="bug-reports" class="tab-pane hidden">
+                    <div class="flex justify-end items-center">
+                        <button id="addBugReport" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-plus mr-2"></i>Add Bug Report</button>
+                    </div>
+                     <div id="bug-reports-container" class="space-y-6 mt-4">
+                        <!-- Bug reports will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Evidence Modal -->
+    <div id="evidenceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
+        <div class="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Add Evidence</h3>
+                <button id="closeModalBtn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Evidence Type Selection -->
+            <div class="mb-4">
+                <div class="flex space-x-4 mb-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="evidenceType" value="image" checked class="mr-2">
+                        <span>Image</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="evidenceType" value="video" class="mr-2">
+                        <span>Video</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Image Input -->
+            <div id="imageInputSection" class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Image URL</label>
+                <input type="url" id="imageUrlInput" placeholder="Enter image URL" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Video Input -->
+            <div id="videoInputSection" class="mb-4 hidden">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Video URL</label>
+                        <input type="url" id="videoUrlInput" placeholder="Enter video URL (YouTube, Vimeo, etc.)" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Google Drive Video</label>
+                        <input type="url" id="googleDriveInput" placeholder="https://drive.google.com/file/d/VIDEO_ID/view" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="text-xs text-gray-600 mt-2 space-y-1">
+                            <p><strong>Step 1:</strong> Right-click your video in Google Drive → Share</p>
+                            <p><strong>Step 2:</strong> Change to "Anyone with the link can view"</p>
+                            <p><strong>Step 3:</strong> Copy the share link and paste it here</p>
+                        </div>
+                        <p class="text-xs text-blue-600 mt-1">Example: https://drive.google.com/file/d/1ABC123DEF456GHI789JKL/view</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button id="addEvidenceBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                    Add Evidence
+                </button>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="mt-4">
+                <img id="modalImage" src="" class="w-full h-auto hidden">
+                <video id="modalVideo" controls class="w-full h-auto hidden">
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Zoom Modal -->
+    <div id="zoomModal" class="fixed inset-0 bg-black bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50">
+        <div class="relative max-w-6xl max-h-full p-4">
+            <button id="closeZoomBtn" class="absolute top-4 right-4 text-white hover:text-gray-300 z-10">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <img id="zoomedImage" src="" class="max-w-full max-h-full object-contain">
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let allData = [];
+            
+            // Pagination variables
+            let currentPage = 1;
+            let pageSize = 10;
+            
+            // --- INITIAL DATA LOAD ---
+            // Fetch the data from the flask server endpoint
+            loadDataFromCSV('/data/.test.csv');
+
+            // --- UI ELEMENT HANDLER ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            const searchInput = document.getElementById('searchInput');
+            const exportTestCasesBtn = document.getElementById('exportTestCases');
+            const exportBugReportsBtn = document.getElementById('exportBugReports');
+            const exportXlsxBtn = document.getElementById('exportXlsx');
+            const importTestCasesBtn = document.getElementById('importTestCases');
+            const importBugReportsBtn = document.getElementById('importBugReports');
+            const csvFileInput = document.getElementById('csvFileInput');
+            const saveButton = document.getElementById('saveButton');
+            const addTestCaseBtn = document.getElementById('addTestCase');
+            const addBugReportBtn = document.getElementById('addBugReport');
+            
+            // --- MODAL HANDLERS ---
+            const evidenceModal = document.getElementById('evidenceModal');
+            const zoomModal = document.getElementById('zoomModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalVideo = document.getElementById('modalVideo');
+            const zoomedImage = document.getElementById('zoomedImage');
+
+            // --- EVENT LISTENERS ---
+
+            // Tab functionality
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tab = button.dataset.tab;
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    tabPanes.forEach(pane => {
+                        pane.id === tab ? pane.classList.remove('hidden') : pane.classList.add('hidden');
+                    });
+                });
+            });
+
+            // Accordion functionality
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    header.classList.toggle('active');
+                    header.querySelector('i').classList.toggle('rotate-180');
+                });
+            });
+
+            // Search functionality
+            searchInput.addEventListener('keyup', () => {
+                const filter = searchInput.value.toLowerCase();
+                document.querySelectorAll('.searchable, .searchable-card').forEach(item => {
+                    const text = item.textContent || item.innerText;
+                    item.style.display = text.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                });
+            });
+
+            // Export functionality
+            exportTestCasesBtn.addEventListener('click', () => exportData('Test Case'));
+            exportBugReportsBtn.addEventListener('click', () => exportData('Bug Report'));
+            exportXlsxBtn.addEventListener('click', () => exportXlsx());
+            
+            // Import functionality
+            importTestCasesBtn.addEventListener('click', () => {
+                csvFileInput.dataset.importType = 'Test Case';
+                csvFileInput.click();
+            });
+            importBugReportsBtn.addEventListener('click', () => {
+                csvFileInput.dataset.importType = 'Bug Report';
+                csvFileInput.click();
+            });
+            csvFileInput.addEventListener('change', importData);
+
+            // Modal: Event Delegation for dynamically added "Add Evidence" buttons
+            const bugReportsContainer = document.getElementById('bug-reports-container');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const closeZoomBtn = document.getElementById('closeZoomBtn');
+            const addEvidenceBtn = document.getElementById('addEvidenceBtn');
+            const imageUrlInput = document.getElementById('imageUrlInput');
+            const videoUrlInput = document.getElementById('videoUrlInput');
+            const googleDriveInput = document.getElementById('googleDriveInput');
+            const evidenceTypeRadios = document.querySelectorAll('input[name="evidenceType"]');
+            const imageInputSection = document.getElementById('imageInputSection');
+            const videoInputSection = document.getElementById('videoInputSection');
+            let currentEvidenceGallery = null;
+
+            bugReportsContainer.addEventListener('click', (e) => {
+                if (e.target && e.target.matches('.add-evidence-btn, .add-evidence-btn *')) {
+                    currentEvidenceGallery = e.target.closest('.bug-card').querySelector('.evidence-gallery');
+                    evidenceModal.classList.remove('hidden');
+                }
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                evidenceModal.classList.add('hidden');
+                resetModal();
+            });
+
+            closeZoomBtn.addEventListener('click', () => {
+                zoomModal.classList.add('hidden');
+            });
+            
+            // Evidence type radio button handlers
+            evidenceTypeRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.value === 'image') {
+                        imageInputSection.classList.remove('hidden');
+                        videoInputSection.classList.add('hidden');
+                    } else {
+                        imageInputSection.classList.add('hidden');
+                        videoInputSection.classList.remove('hidden');
+                    }
+                });
+            });
+            
+            addEvidenceBtn.addEventListener('click', () => {
+                const selectedType = document.querySelector('input[name="evidenceType"]:checked').value;
+                let evidenceUrl = '';
+                let evidenceType = '';
+
+                if (selectedType === 'image') {
+                    evidenceUrl = imageUrlInput.value.trim();
+                    evidenceType = 'image';
+                } else {
+                    evidenceUrl = videoUrlInput.value.trim() || googleDriveInput.value.trim();
+                    evidenceType = 'video';
+                }
+
+                if (evidenceUrl && currentEvidenceGallery) {
+                    addEvidenceToGallery(evidenceUrl, evidenceType, currentEvidenceGallery);
+                }
+                evidenceModal.classList.add('hidden');
+                resetModal();
+            });
+
+            function resetModal() {
+                imageUrlInput.value = '';
+                videoUrlInput.value = '';
+                googleDriveInput.value = '';
+                modalImage.classList.add('hidden');
+                modalVideo.classList.add('hidden');
+                document.querySelector('input[name="evidenceType"][value="image"]').checked = true;
+                imageInputSection.classList.remove('hidden');
+                videoInputSection.classList.add('hidden');
+            }
+
+            function convertGoogleDriveUrl(url) {
+                // Convert Google Drive share link to embeddable URL
+                if (url.includes('drive.google.com/file/d/')) {
+                    // Extract file ID from various Google Drive URL formats
+                    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+                    if (fileIdMatch) {
+                        const fileId = fileIdMatch[1];
+                        // Try multiple embedding methods
+                        return `https://drive.google.com/file/d/${fileId}/preview`;
+                    }
+                }
+                return url;
+            }
+
+            function createGoogleDriveEmbed(fileId) {
+                // Create a more robust Google Drive embed
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://drive.google.com/file/d/${fileId}/preview`;
+                iframe.className = 'w-full h-32 rounded-md border';
+                iframe.frameBorder = '0';
+                iframe.allowFullscreen = true;
+                iframe.allow = 'autoplay; fullscreen';
+                iframe.title = 'Google Drive Video';
+                
+                // Add error handling
+                iframe.onerror = () => {
+                    iframe.innerHTML = '<div class="w-full h-32 bg-yellow-100 rounded-md border flex flex-col items-center justify-center text-yellow-800 text-xs p-2"><i class="fas fa-exclamation-triangle mb-1"></i><div>Video not accessible</div><div>Make sure it\'s public</div></div>';
+                };
+                
+                // Add load event to check if video loads properly
+                iframe.onload = () => {
+                    // Check if the iframe content loaded properly
+                    setTimeout(() => {
+                        try {
+                            // If we can't access the iframe content, it might be restricted
+                            if (iframe.contentDocument === null || iframe.contentDocument.body.innerHTML.includes('Sign in')) {
+                                iframe.innerHTML = '<div class="w-full h-32 bg-yellow-100 rounded-md border flex flex-col items-center justify-center text-yellow-800 text-xs p-2"><i class="fas fa-lock mb-1"></i><div>Video is private</div><div>Make it public to view</div></div>';
+                            }
+                        } catch (e) {
+                            // Cross-origin restrictions - this is normal for Google Drive
+                            console.log('Google Drive iframe loaded successfully');
+                        }
+                    }, 2000);
+                };
+                
+                return iframe;
+            }
+
+            function isGoogleDriveUrl(url) {
+                return url.includes('drive.google.com/file/d/');
+            }
+
+            function addEvidenceToGallery(url, type, gallery, skipDataStorage = false) {
+                const container = document.createElement('div');
+                container.className = 'relative group';
+                container.dataset.evidenceUrl = url;
+                container.dataset.evidenceType = type;
+                
+                if (type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = 'Evidence Image';
+                    img.className = 'w-full h-32 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity';
+                    img.onerror = () => { img.src = 'https://placehold.co/600x400/f3f4f6/9ca3af?text=Image+Not+Found'; };
+                    
+                    // Add edit and delete buttons
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'evidence-edit-btn absolute top-2 right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.title = 'Edit URL';
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'evidence-delete-btn absolute top-2 left-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteBtn.title = 'Delete';
+                    
+                    container.appendChild(img);
+                    container.appendChild(editBtn);
+                    container.appendChild(deleteBtn);
+                    
+                    // Image click to zoom
+                    img.addEventListener('click', () => {
+                        zoomedImage.src = url;
+                        zoomModal.classList.remove('hidden');
+                    });
+                    
+                } else {
+                    // Video handling
+                    let videoElement;
+                    
+                    if (isGoogleDriveUrl(url)) {
+                        // Use iframe for Google Drive videos
+                        const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+                        if (fileIdMatch) {
+                            const fileId = fileIdMatch[1];
+                            videoElement = createGoogleDriveEmbed(fileId);
+                        } else {
+                            // Fallback to regular iframe
+                            const iframe = document.createElement('iframe');
+                            const embedUrl = convertGoogleDriveUrl(url);
+                            iframe.src = embedUrl;
+                            iframe.className = 'w-full h-32 rounded-md border';
+                            iframe.frameBorder = '0';
+                            iframe.allowFullscreen = true;
+                            iframe.allow = 'autoplay; fullscreen';
+                            videoElement = iframe;
+                        }
+                    } else {
+                        // Use video element for other video URLs
+                        const video = document.createElement('video');
+                        video.src = url;
+                        video.controls = true;
+                        video.className = 'w-full h-32 object-cover rounded-md border';
+                        video.onerror = () => { 
+                            video.innerHTML = '<div class="w-full h-32 bg-gray-200 rounded-md border flex items-center justify-center text-gray-500">Video not found</div>';
+                        };
+                        videoElement = video;
+                    }
+                    
+                    // Add edit and delete buttons
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'evidence-edit-btn absolute top-2 right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.title = 'Edit URL';
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'evidence-delete-btn absolute top-2 left-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteBtn.title = 'Delete';
+                    
+                    container.appendChild(videoElement);
+                    container.appendChild(editBtn);
+                    container.appendChild(deleteBtn);
+                }
+                
+                gallery.appendChild(container);
+                
+                // Only store the evidence in data attribute if not loading existing data
+                if (!skipDataStorage) {
+                    const bugCard = gallery.closest('.bug-card');
+                    let evidence = bugCard.dataset.evidence ? JSON.parse(bugCard.dataset.evidence) : [];
+                    evidence.push({url: url, type: type});
+                    bugCard.dataset.evidence = JSON.stringify(evidence);
+                }
+            }
+
+            function updateEvidenceData(gallery, oldUrl, newUrl, type) {
+                const bugCard = gallery.closest('.bug-card');
+                let evidence = bugCard.dataset.evidence ? JSON.parse(bugCard.dataset.evidence) : [];
+                
+                // Handle both old format (strings) and new format (objects)
+                const index = evidence.findIndex(item => {
+                    if (typeof item === 'string') {
+                        return item === oldUrl;
+                    } else {
+                        return item.url === oldUrl && item.type === type;
+                    }
+                });
+                
+                if (index !== -1) {
+                    evidence[index] = {url: newUrl, type: type};
+                    bugCard.dataset.evidence = JSON.stringify(evidence);
+                }
+            }
+
+            function removeEvidenceData(gallery, url, type) {
+                const bugCard = gallery.closest('.bug-card');
+                let evidence = bugCard.dataset.evidence ? JSON.parse(bugCard.dataset.evidence) : [];
+                
+                // Handle both old format (strings) and new format (objects)
+                evidence = evidence.filter(item => {
+                    if (typeof item === 'string') {
+                        return item !== url;
+                    } else {
+                        return !(item.url === url && item.type === type);
+                    }
+                });
+                
+                bugCard.dataset.evidence = JSON.stringify(evidence);
+            }
+
+            // Save functionality
+            saveButton.addEventListener('click', () => {
+                console.log("Save button clicked");
+                console.log("Current allData:", allData);
+                
+                // Sync any changes from DOM back to allData before saving
+                syncDataFromDOM();
+                
+                saveData();
+            });
+
+            // Add new item functionality
+            addTestCaseBtn.addEventListener('click', () => addTestCase());
+            addBugReportBtn.addEventListener('click', addBugReport);
+            
+            // Migration functionality
+            document.getElementById('migrateIds').addEventListener('click', migrateOldTestCaseIds);
+            document.getElementById('migrateBugReports').addEventListener('click', migrateAndFixBugReports);
+
+            // Sync DOM changes back to allData array
+            function syncDataFromDOM() {
+                console.log("Syncing data from DOM to allData array");
+                console.log("Current allData length:", allData.length);
+                
+                // Update test cases from DOM
+                const testCaseRows = document.querySelectorAll('#test-cases-table tbody tr');
+                testCaseRows.forEach((row) => {
+                    const cells = row.querySelectorAll('td');
+                    const newId = cells[2].innerText.trim();
+                    const oldId = row.getAttribute('data-test-case-id') || newId;
+                    
+                    // Find the corresponding item in allData using the old ID
+                    const dataIndex = allData.findIndex(item => item.ID === oldId);
+                    if (dataIndex !== -1) {
+                        // Check if the new ID already exists (to prevent duplicates)
+                        const existingIndex = allData.findIndex(item => item.ID === newId && item !== allData[dataIndex]);
+                        if (existingIndex !== -1) {
+                            console.warn(`Test Case ID ${newId} already exists. Keeping original ID ${oldId}.`);
+                            cells[2].innerText = oldId;
+                            return;
+                        }
+                        
+                        allData[dataIndex] = {
+                            Type: 'Test Case',
+                            Platform: cells[0].querySelector('select') ? cells[0].querySelector('select').value : row.getAttribute('data-platform'),
+                            Section: cells[1].innerText.trim(),
+                            ID: newId,
+                            'Title/Objective': cells[3].innerText.trim(),
+                            'Test Steps': cells[4].innerText.trim(),
+                            'Test Data': cells[5].innerText.trim(),
+                            'Expected Result': cells[6].innerText.trim(),
+                            'Actual Result': cells[7].innerText.trim(),
+                            'Priority/Severity': cells[8].querySelector('select') ? cells[8].querySelector('select').value : cells[8].innerText.trim(),
+                            Status: cells[9].querySelector('select') ? cells[9].querySelector('select').value : cells[9].innerText.trim(),
+                            Description: allData[dataIndex].Description || '',
+                            Evidence: allData[dataIndex].Evidence || '',
+                            'Related Test Case': allData[dataIndex]['Related Test Case'] || ''
+                        };
+                        
+                        // Update the data attribute if ID changed
+                        if (oldId !== newId) {
+                            row.setAttribute('data-test-case-id', newId);
+                        }
+                        
+                        console.log('Updated test case:', allData[dataIndex].ID, 'Priority:', allData[dataIndex]['Priority/Severity'], 'Status:', allData[dataIndex].Status);
+                    } else {
+                        console.warn(`Could not find test case with ID ${oldId} in data array.`);
+                    }
+                });
+
+                // Update bug reports from DOM
+                const bugCards = document.querySelectorAll('.bug-card');
+                bugCards.forEach((card) => {
+                    const oldId = card.getAttribute('data-bug-id');
+                    const newId = card.querySelector('.bug-id').innerText.trim();
+                    const relatedTestCase = card.querySelector('.related-test-case');
+                    const relatedTestCaseValue = relatedTestCase ? relatedTestCase.value : '';
+                    const platformSelect = card.querySelector('.bug-platform');
+                    const platformValue = platformSelect ? platformSelect.value : (card.getAttribute('data-platform') || 'Client');
+                    
+                    // Find the corresponding item in allData using the old ID
+                    const dataIndex = allData.findIndex(item => item.ID === oldId);
+                    if (dataIndex !== -1) {
+                        // Check if the new ID already exists (to prevent duplicates)
+                        const existingIndex = allData.findIndex(item => item.ID === newId && item !== allData[dataIndex]);
+                        if (existingIndex !== -1) {
+                            console.warn(`Bug ID ${newId} already exists. Keeping original ID ${oldId}.`);
+                            card.querySelector('.bug-id').innerText = oldId;
+                            return;
+                        }
+                        
+                        allData[dataIndex] = {
+                            Type: 'Bug Report',
+                            Platform: platformValue,
+                            Section: '',
+                            ID: newId,
+                            'Title/Objective': card.querySelector('.bug-title').innerText.trim(),
+                            'Test Steps': '',
+                            'Test Data': '',
+                            'Expected Result': '',
+                            'Actual Result': '',
+                            'Priority/Severity': card.querySelector('.bug-severity').value,
+                            Status: card.querySelector('.bug-status').value,
+                            Description: card.querySelector('.bug-description').innerText.replace('Description:', '').trim(),
+                            Evidence: card.dataset.evidence || '',
+                            'Related Test Case': relatedTestCaseValue
+                        };
+                        
+                        // Update the data attribute if ID changed
+                        if (oldId !== newId) {
+                            card.setAttribute('data-bug-id', newId);
+                        }
+                    } else {
+                        console.warn(`Could not find bug with ID ${oldId} in data array.`);
+                    }
+                });
+                
+                console.log("Data sync completed. allData now has", allData.length, "items");
+                
+                // Update dashboard statistics after data sync
+                updateSummaryMetrics();
+            }
+
+            // Pagination event listeners
+            document.getElementById('page-size').addEventListener('change', (e) => {
+                pageSize = parseInt(e.target.value);
+                currentPage = 1;
+                populateReport(allData);
+            });
+
+            document.getElementById('prev-page').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    populateReport(allData);
+                    // Ensure button states are updated after pagination
+                    setTimeout(() => {
+                        updateMoveButtonStates();
+                    }, 150);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                const testCases = allData.filter(item => item.Type === 'Test Case');
+                const totalPages = Math.ceil(testCases.length / pageSize);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    populateReport(allData);
+                    // Ensure button states are updated after pagination
+                    setTimeout(() => {
+                        updateMoveButtonStates();
+                    }, 150);
+                }
+            });
+
+            // Add event listeners to sync data when users make changes
+            document.addEventListener('blur', (e) => {
+                if (e.target.contentEditable === 'true' || e.target.tagName === 'SELECT') {
+                    syncDataFromDOM();
+                }
+            });
+            
+            // Add change event listener for select elements to ensure immediate sync
+            document.addEventListener('change', (e) => {
+                if (e.target.tagName === 'SELECT') {
+                    console.log('Select changed:', e.target.className, 'Value:', e.target.value);
+                    syncDataFromDOM();
+                }
+            });
+
+            // Remove item functionality
+            document.body.addEventListener('click', function(e) {
+                const removeButton = e.target.closest('.remove-item');
+                if (removeButton) {
+                    const idToRemove = removeButton.dataset.id;
+                    allData = allData.filter(item => item.ID !== idToRemove);
+                    populateReport(allData);
+                }
+            });
+
+            // Individual bug save functionality
+            document.body.addEventListener('click', function(e) {
+                const saveButton = e.target.closest('.save-bug');
+                if (saveButton) {
+                    const bugId = saveButton.dataset.id;
+                    saveIndividualBug(bugId);
+                }
+            });
+
+            // Individual test case save functionality
+            document.body.addEventListener('click', function(e) {
+                const saveButton = e.target.closest('.save-testcase');
+                if (saveButton) {
+                    const testCaseId = saveButton.dataset.id;
+                    saveIndividualTestCase(testCaseId);
+                }
+            });
+
+            // Move item functionality
+            document.body.addEventListener('click', function(e) {
+                const moveUpButton = e.target.closest('.move-up');
+                const moveDownButton = e.target.closest('.move-down');
+                const insertBeforeButton = e.target.closest('.insert-before');
+                const insertAfterButton = e.target.closest('.insert-after');
+                
+                if (moveUpButton && !moveUpButton.disabled) {
+                    const idToMove = moveUpButton.dataset.id;
+                    moveItem(idToMove, 'up');
+                } else if (moveDownButton && !moveDownButton.disabled) {
+                    const idToMove = moveDownButton.dataset.id;
+                    moveItem(idToMove, 'down');
+                } else if (insertBeforeButton) {
+                    const id = insertBeforeButton.dataset.id;
+                    const type = insertBeforeButton.dataset.type;
+                    const platform = insertBeforeButton.dataset.platform;
+                    insertItemBefore(id, type, platform);
+                } else if (insertAfterButton) {
+                    const id = insertAfterButton.dataset.id;
+                    const type = insertAfterButton.dataset.type;
+                    const platform = insertAfterButton.dataset.platform;
+                    insertItemAfter(id, type, platform);
+                }
+            });
+
+            // Image zoom functionality
+            document.body.addEventListener('click', function(e) {
+                if (e.target && e.target.tagName === 'IMG' && e.target.closest('.evidence-gallery')) {
+                    zoomedImage.src = e.target.src;
+                    zoomModal.classList.remove('hidden');
+                } else if (e.target.id === 'zoomModal') {
+                    zoomModal.classList.add('hidden');
+                }
+            });
+
+            // Evidence delete functionality using event delegation
+            document.body.addEventListener('click', function(e) {
+                if (e.target && e.target.closest('.evidence-delete-btn')) {
+                    e.stopPropagation();
+                    const deleteBtn = e.target.closest('.evidence-delete-btn');
+                    const container = deleteBtn.closest('.relative.group');
+                    const gallery = container.closest('.evidence-gallery');
+                    
+                    if (confirm('Are you sure you want to delete this evidence?')) {
+                        // Get the URL and type from the container's data attributes
+                        const url = container.dataset.evidenceUrl;
+                        const type = container.dataset.evidenceType;
+                        
+                        container.remove();
+                        removeEvidenceData(gallery, url, type);
+                    }
+                }
+            });
+
+            // Evidence edit functionality using event delegation
+            document.body.addEventListener('click', function(e) {
+                if (e.target && e.target.closest('.evidence-edit-btn')) {
+                    e.stopPropagation();
+                    const editBtn = e.target.closest('.evidence-edit-btn');
+                    const container = editBtn.closest('.relative.group');
+                    const gallery = container.closest('.evidence-gallery');
+                    const url = container.dataset.evidenceUrl;
+                    const type = container.dataset.evidenceType;
+                    
+                    const newUrl = prompt(`Edit ${type} URL:`, url);
+                    if (newUrl && newUrl !== url) {
+                        // Update the visual element
+                        if (type === 'image') {
+                            const img = container.querySelector('img');
+                            if (img) img.src = newUrl;
+                        } else {
+                            const video = container.querySelector('video');
+                            const iframe = container.querySelector('iframe');
+                            
+                            if (video) {
+                                video.src = newUrl;
+                            } else if (iframe) {
+                                // Recreate the video element based on the new URL
+                                const videoElement = container.querySelector('video, iframe');
+                                if (videoElement) {
+                                    videoElement.remove();
+                                }
+                                
+                                let newVideoElement;
+                                if (isGoogleDriveUrl(newUrl)) {
+                                    const newIframe = document.createElement('iframe');
+                                    const embedUrl = convertGoogleDriveUrl(newUrl);
+                                    newIframe.src = embedUrl;
+                                    newIframe.className = 'w-full h-32 rounded-md border';
+                                    newIframe.frameBorder = '0';
+                                    newIframe.allowFullscreen = true;
+                                    newVideoElement = newIframe;
+                                } else {
+                                    const newVideo = document.createElement('video');
+                                    newVideo.src = newUrl;
+                                    newVideo.controls = true;
+                                    newVideo.className = 'w-full h-32 object-cover rounded-md border';
+                                    newVideoElement = newVideo;
+                                }
+                                
+                                // Insert before the edit button
+                                const editBtn = container.querySelector('.evidence-edit-btn');
+                                container.insertBefore(newVideoElement, editBtn);
+                            }
+                        }
+                        
+                        // Update data attributes
+                        container.dataset.evidenceUrl = newUrl;
+                        
+                        // Update the stored evidence data
+                        updateEvidenceData(gallery, url, newUrl, type);
+                    }
+                }
+            });
+
+            // Touch/swipe functionality for table scrolling
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let isScrolling = false;
+
+            document.addEventListener('touchstart', function(e) {
+                const tableContainer = e.target.closest('.table-container');
+                if (tableContainer) {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    isScrolling = false;
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchmove', function(e) {
+                const tableContainer = e.target.closest('.table-container');
+                if (tableContainer) {
+                    const touchCurrentX = e.touches[0].clientX;
+                    const touchCurrentY = e.touches[0].clientY;
+                    const diffX = touchStartX - touchCurrentX;
+                    const diffY = touchStartY - touchCurrentY;
+
+                    // Determine if this is a horizontal scroll
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        isScrolling = true;
+                        e.preventDefault();
+                        
+                        // Smooth scroll the table container
+                        const currentScroll = tableContainer.scrollLeft;
+                        tableContainer.scrollLeft = currentScroll + diffX * 0.5;
+                    }
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', function(e) {
+                if (isScrolling) {
+                    e.preventDefault();
+                }
+                isScrolling = false;
+            }, { passive: false });
+
+            // --- DATA HANDLING FUNCTIONS ---
+
+            function loadDataFromCSV(filePath) {
+                Papa.parse(filePath, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        console.log("CSV loaded. Total rows:", results.data.length);
+                        console.log("Bug reports loaded:", results.data.filter(row => row.Type === 'Bug Report').length);
+                        console.log("Critical bugs loaded:", results.data.filter(row => row.Type === 'Bug Report' && row['Priority/Severity'] === 'Critical').length);
+                        populateReport(results.data);
+                    },
+                    error: function(err, file) {
+                        console.error("Error loading CSV:", err, file);
+                        if (err.message) {
+                            console.error("PapaParse error message:", err.message);
+                        }
+                        if (err.row) {
+                            console.error("Error on row:", err.row);
+                        }
+                        alert("Could not load or parse the CSV file from the server. Check the console for details.");
+                    }
+                });
+            }
+
+            function populateReport(data) {
+                allData = data;
+                
+                // Ensure all items have the Related Test Case field
+                allData.forEach(item => {
+                    if (!item.hasOwnProperty('Related Test Case')) {
+                        item['Related Test Case'] = '';
+                    }
+                });
+                const testCasesTbody = document.querySelector('#test-cases-table tbody');
+                const bugContainer = document.getElementById('bug-reports-container');
+
+                // Clear existing data
+                testCasesTbody.innerHTML = '';
+                bugContainer.innerHTML = '';
+
+                // Filter test cases by platform
+                const testCases = data.filter(row => row.Type === 'Test Case');
+                const bugReports = data.filter(row => row.Type === 'Bug Report');
+
+                // Paginate test cases
+                const startIndex = (currentPage - 1) * pageSize;
+                const endIndex = startIndex + pageSize;
+                const paginatedData = testCases.slice(startIndex, endIndex);
+
+                // Render paginated test cases
+                paginatedData.forEach((row, index) => {
+                    const testCaseRow = createTestCaseRow(row);
+                    testCasesTbody.appendChild(testCaseRow);
+                });
+
+                // Render all bug reports (no pagination for now)
+                bugReports.forEach((row, index) => {
+                    const bugCard = createBugCard(row);
+                    bugContainer.appendChild(bugCard);
+                });
+
+                // Update pagination controls
+                updatePaginationControls();
+                
+                // Update button states after all items are rendered
+                setTimeout(() => {
+                    updateMoveButtonStates();
+                }, 100);
+                updateSummaryMetrics();
+                
+                // Refresh all bug report dropdowns after rendering
+                setTimeout(() => {
+                    refreshAllBugReportDropdowns();
+                }, 100);
+            }
+            
+            function createTestCaseRow(data) {
+                const tr = document.createElement('tr');
+                tr.className = 'bg-white border-b searchable';
+                tr.setAttribute('data-test-case-id', data.ID);
+                tr.setAttribute('data-platform', data.Platform);
+                
+                const priorityOptions = ['None', 'Low', 'Medium', 'High', 'Critical'];
+                const statusOptions = ['To Be Executed', 'PASS', 'FAIL'];
+
+                tr.innerHTML = `
+                    <td class="px-1 py-4 font-medium text-gray-900 w-20">
+                        <select class="platform-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <option value="CRM" ${data.Platform === 'CRM' ? 'selected' : ''}>CRM</option>
+                            <option value="Client" ${data.Platform === 'Client' ? 'selected' : ''}>Web</option>
+                        </select>
+                    </td>
+                    <td class="px-1 py-4 font-medium text-gray-900 w-20" contenteditable="true">${data.Section}</td>
+                    <td class="px-1 py-4 w-16" contenteditable="true" title="Click to edit Test Case ID">${data.ID}</td>
+                    <td class="px-1 py-4 w-40" contenteditable="true">${data['Title/Objective']}</td>
+                    <td class="px-1 py-4 w-32" contenteditable="true">${data['Test Steps'] || ''}</td>
+                    <td class="px-1 py-4 w-28" contenteditable="true">${data['Test Data'] || ''}</td>
+                    <td class="px-1 py-4 w-32" contenteditable="true">${data['Expected Result'] || ''}</td>
+                    <td class="px-1 py-4 w-32" contenteditable="true">${data['Actual Result'] || ''}</td>
+                    <td class="px-1 py-4 w-20">
+                        <select class="priority-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            ${priorityOptions.map(p => `<option value="${p}" ${data['Priority/Severity'] === p ? 'selected' : ''}>${p}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="px-1 py-4 w-24">
+                        <select class="status-select bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            ${statusOptions.map(s => `<option value="${s}" ${data.Status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td class="px-1 py-4 w-20">
+                        <div class="flex flex-col gap-1">
+                            <button class="insert-before text-green-500 hover:text-green-700 text-xs" data-id="${data.ID}" data-type="Test Case" data-platform="${data.Platform}" title="Insert Before">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="move-up text-blue-500 hover:text-blue-700 text-sm" data-id="${data.ID}" title="Move Up">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                            <button class="move-down text-blue-500 hover:text-blue-700 text-sm" data-id="${data.ID}" title="Move Down">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <button class="insert-after text-green-500 hover:text-green-700 text-xs" data-id="${data.ID}" data-type="Test Case" data-platform="${data.Platform}" title="Insert After">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td class="px-1 py-4 w-20">
+                        <div class="flex gap-1">
+                            <button class="save-testcase text-green-600 hover:text-green-800 px-1 py-1 border border-green-300 rounded text-xs" data-id="${data.ID}" title="Save Test Case">
+                                <i class="fas fa-save"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 remove-item" data-id="${data.ID}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                
+                const platformSelect = tr.querySelector('.platform-select');
+                const prioritySelect = tr.querySelector('.priority-select');
+                const statusSelect = tr.querySelector('.status-select');
+
+                const updateColors = () => {
+                    const priorityValue = prioritySelect.value.toLowerCase();
+                    const statusValue = statusSelect.value.toLowerCase();
+
+                    if (statusValue === 'pass') {
+                        prioritySelect.value = 'None';
+                        prioritySelect.disabled = true;
+                    } else {
+                        prioritySelect.disabled = false;
+                    }
+
+                    const priorityMap = {
+                        'critical': 'bg-red-100 text-red-800',
+                        'high': 'bg-orange-100 text-orange-800',
+                        'medium': 'bg-yellow-100 text-yellow-800',
+                        'low': 'bg-blue-100 text-blue-800'
+                    };
+                    prioritySelect.className = `priority-select text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full ${priorityMap[priorityValue] || 'bg-gray-100 text-gray-800'}`;
+                    
+                    const statusMap = {
+                        'pass': 'text-green-600',
+                        'fail': 'text-red-600',
+                    };
+                    statusSelect.className = `status-select font-bold ${statusMap[statusValue] || 'text-gray-600'}`;
+                };
+
+                platformSelect.addEventListener('change', () => {
+                    // Update the data-platform attribute when platform changes
+                    tr.setAttribute('data-platform', platformSelect.value);
+                    syncDataFromDOM();
+                });
+                prioritySelect.addEventListener('change', updateColors);
+                statusSelect.addEventListener('change', updateColors);
+                
+                // Add test case ID validation
+                const testCaseIdCell = tr.querySelector('td:nth-child(3)'); // The ID cell
+                testCaseIdCell.addEventListener('blur', function() {
+                    const newId = this.innerText.trim();
+                    const oldId = tr.getAttribute('data-test-case-id');
+                    const platform = tr.getAttribute('data-platform');
+                    
+                    // Validate test case ID format based on platform
+                    let testCaseIdPattern, expectedFormat;
+                    if (platform === 'CRM') {
+                        testCaseIdPattern = /^CRM-TC\d{3}$/;
+                        expectedFormat = 'CRM-TCXXX (e.g., CRM-TC001)';
+                    } else {
+                        testCaseIdPattern = /^WEB-TC\d{3}$/;
+                        expectedFormat = 'WEB-TCXXX (e.g., WEB-TC001)';
+                    }
+                    
+                    if (!testCaseIdPattern.test(newId)) {
+                        alert(`Test Case ID must be in format ${expectedFormat}`);
+                        this.innerText = oldId;
+                        return;
+                    }
+                    
+                    // Check for duplicates
+                    const existingTestCase = allData.find(item => item.ID === newId && item !== allData.find(dataItem => dataItem.ID === oldId));
+                    if (existingTestCase) {
+                        alert(`Test Case ID ${newId} already exists. Please choose a different ID.`);
+                        this.innerText = oldId;
+                        return;
+                    }
+                });
+                
+                updateColors();
+
+                return tr;
+            }
+
+            function createBugCard(data) {
+                const div = document.createElement('div');
+                const severityOptions = ['Low', 'Medium', 'High', 'Critical'];
+                const statusOptions = ['Open', 'In Progress', 'Closed'];
+
+                div.className = `bug-card bg-white shadow-md rounded-lg p-6 searchable-card`;
+                div.setAttribute('data-bug-id', data.ID);
+                div.setAttribute('data-platform', data.Platform);
+                div.dataset.evidence = data.Evidence || '';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 bug-id" contenteditable="true" title="Click to edit Bug ID">${data.ID} <i class="fas fa-edit text-xs text-gray-400 ml-1"></i></p>
+                            <h3 class="text-xl font-bold text-gray-900 mt-1 bug-title" contenteditable="true">${data['Title/Objective']}</h3>
+                        </div>
+                        <select class="bug-severity bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            ${severityOptions.map(p => `<option value="${p}" ${data['Priority/Severity'] === p ? 'selected' : ''}>${p}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-600"><strong class="font-semibold text-gray-800">Status:</strong> 
+                            <select class="bug-status bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                ${statusOptions.map(s => `<option value="${s}" ${data.Status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                        </p>
+                        <p class="text-gray-600 mt-2"><strong class="font-semibold text-gray-800">Related Test Case:</strong> 
+                            <select class="related-test-case bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full mt-1">
+                                <option value="">Select a test case...</option>
+                            </select>
+                        </p>
+                        <p class="text-gray-600 mt-2"><strong class="font-semibold text-gray-800">Platform:</strong> 
+                            <select class="bug-platform bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full mt-1">
+                                <option value="CRM" ${data.Platform === 'CRM' ? 'selected' : ''}>CRM</option>
+                                <option value="Client" ${data.Platform === 'Client' ? 'selected' : ''}>Web</option>
+                            </select>
+                        </p>
+                        <p class="text-gray-600 mt-2 bug-description" contenteditable="true"><strong class="font-semibold text-gray-800">Description:</strong> ${data.Description || 'No description provided.'}</p>
+                        <!-- Reproduction steps and business impact would need more columns in CSV or be part of description -->
+                        <div class="mt-4">
+                            <h4 class="font-semibold text-gray-800 mb-2">Evidence:</h4>
+                            <div class="evidence-gallery grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                            <button class="add-evidence-btn mt-2 text-sm text-blue-600 hover:text-blue-800 font-semibold"><i class="fas fa-plus-circle mr-1"></i> Add Evidence</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-4">
+                        <div class="flex gap-2">
+                            <button class="insert-before text-green-500 hover:text-green-700 text-xs px-2 py-1 border border-green-300 rounded" data-id="${data.ID}" data-type="Bug Report" data-platform="${data.Platform}" title="Insert Before">
+                                <i class="fas fa-plus mr-1"></i>Before
+                            </button>
+                            <button class="move-up text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-300 rounded" data-id="${data.ID}" title="Move Up">
+                                <i class="fas fa-chevron-up mr-1"></i>Move Up
+                            </button>
+                            <button class="move-down text-blue-500 hover:text-blue-700 text-sm px-2 py-1 border border-blue-300 rounded" data-id="${data.ID}" title="Move Down">
+                                <i class="fas fa-chevron-down mr-1"></i>Move Down
+                            </button>
+                            <button class="insert-after text-green-500 hover:text-green-700 text-xs px-2 py-1 border border-green-300 rounded" data-id="${data.ID}" data-type="Bug Report" data-platform="${data.Platform}" title="Insert After">
+                                <i class="fas fa-plus mr-1"></i>After
+                            </button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="save-bug text-green-600 hover:text-green-800 px-2 py-1 border border-green-300 rounded text-sm" data-id="${data.ID}" title="Save Bug Report">
+                                <i class="fas fa-save mr-1"></i>Save
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 remove-item" data-id="${data.ID}"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Populate the test case dropdown
+                populateTestCasesDropdown(div, data['Related Test Case'] || '');
+                if (data.Evidence) {
+                    try {
+                        const gallery = div.querySelector('.evidence-gallery');
+                        
+                        // Clear existing evidence first to prevent duplication
+                        gallery.innerHTML = '';
+                        
+                        // Check if Evidence is already a JSON string
+                        if (data.Evidence.startsWith('[') || data.Evidence.startsWith('{')) {
+                            const evidence = JSON.parse(data.Evidence);
+                            
+                            // Handle both old format (array of URLs) and new format (array of objects)
+                            if (Array.isArray(evidence)) {
+                                evidence.forEach(evidenceItem => {
+                                    let url, type;
+                                    
+                                    if (typeof evidenceItem === 'string') {
+                                        // Old format - just URL strings
+                                        url = evidenceItem;
+                                        type = 'image';
+                                    } else {
+                                        // New format - objects with url and type
+                                        url = evidenceItem.url;
+                                        type = evidenceItem.type || 'image';
+                                    }
+                                    
+                                    // Skip data storage when loading existing evidence to prevent duplication
+                                    addEvidenceToGallery(url, type, gallery, true);
+                                });
+                            }
+                        } else {
+                            // If it's plain text, treat it as a single evidence item
+                            addEvidenceToGallery(data.Evidence, 'image', gallery, true);
+                        }
+                    } catch (e) {
+                        // If JSON parsing fails, treat the entire Evidence field as a single URL
+                        const gallery = div.querySelector('.evidence-gallery');
+                        addEvidenceToGallery(data.Evidence, 'image', gallery, true);
+                    }
+                }
+                
+                const severitySelect = div.querySelector('.bug-severity');
+                const statusSelect = div.querySelector('.bug-status');
+
+                const updateColors = () => {
+                    const severityValue = severitySelect.value.toLowerCase();
+                    const statusValue = statusSelect.value.toLowerCase();
+
+                    const severityMap = {
+                        'critical': 'bg-red-100 text-red-800',
+                        'high': 'bg-orange-100 text-orange-800',
+                        'medium': 'bg-yellow-100 text-yellow-800',
+                        'low': 'bg-blue-100 text-blue-800'
+                    };
+                    severitySelect.className = `bug-severity text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full ${severityMap[severityValue] || 'bg-gray-100 text-gray-800'}`;
+                    
+                    const statusMap = {
+                        'open': 'text-red-600',
+                        'in progress': 'text-yellow-600',
+                        'closed': 'text-green-600',
+                    };
+                    statusSelect.className = `bug-status font-bold ${statusMap[statusValue] || 'text-gray-600'}`;
+                };
+
+                severitySelect.addEventListener('change', updateColors);
+                statusSelect.addEventListener('change', updateColors);
+                
+                // Add platform selection change handler
+                const platformSelect = div.querySelector('.bug-platform');
+                if (platformSelect) {
+                    platformSelect.addEventListener('change', function() {
+                        const selectedPlatform = this.value;
+                        
+                        // Update the platform in the data attribute
+                        div.setAttribute('data-platform', selectedPlatform);
+                        
+                        // Update the platform in allData
+                        const bugIndex = allData.findIndex(item => item.ID === data.ID);
+                        if (bugIndex !== -1) {
+                            allData[bugIndex].Platform = selectedPlatform;
+                        }
+                        
+                        console.log(`Platform manually set for bug ${data.ID}: ${selectedPlatform}`);
+                    });
+                }
+
+                // Add platform auto-detection when related test case changes
+                const relatedTestCaseSelect = div.querySelector('.related-test-case');
+                if (relatedTestCaseSelect) {
+                    relatedTestCaseSelect.addEventListener('change', function() {
+                        const selectedTestCaseId = this.value;
+                        const detectedPlatform = detectPlatformFromTestCase(selectedTestCaseId);
+                        
+                        // Only auto-update if platform is not manually set or if it's the same
+                        const currentPlatform = div.getAttribute('data-platform');
+                        if (!currentPlatform || currentPlatform === detectedPlatform) {
+                            // Update the platform in the data attribute
+                            div.setAttribute('data-platform', detectedPlatform);
+                            
+                            // Update the platform dropdown
+                            platformSelect.value = detectedPlatform;
+                            
+                            // Update the platform in allData
+                            const bugIndex = allData.findIndex(item => item.ID === data.ID);
+                            if (bugIndex !== -1) {
+                                allData[bugIndex].Platform = detectedPlatform;
+                            }
+                            
+                            console.log(`Platform auto-detected for bug ${data.ID}: ${detectedPlatform} (from test case: ${selectedTestCaseId})`);
+                        } else {
+                            console.log(`Platform manually set to ${currentPlatform}, not auto-updating from test case ${selectedTestCaseId}`);
+                        }
+                    });
+                }
+
+                // Add bug ID validation
+                const bugIdElement = div.querySelector('.bug-id');
+                bugIdElement.addEventListener('blur', function() {
+                    const newId = this.innerText.trim();
+                    const oldId = div.getAttribute('data-bug-id');
+                    const platform = div.getAttribute('data-platform');
+                    
+                    // Validate bug ID format based on platform
+                    let bugIdPattern, expectedFormat;
+                    if (platform === 'CRM') {
+                        bugIdPattern = /^CRM-BUG\d{3}$/;
+                        expectedFormat = 'CRM-BUGXXX (e.g., CRM-BUG001)';
+                    } else {
+                        bugIdPattern = /^WEB-BUG\d{3}$/;
+                        expectedFormat = 'WEB-BUGXXX (e.g., WEB-BUG001)';
+                    }
+                    
+                    if (!bugIdPattern.test(newId)) {
+                        alert(`Bug ID must be in format ${expectedFormat}`);
+                        this.innerText = oldId;
+                        return;
+                    }
+                    
+                    // Check for duplicates
+                    const existingBug = allData.find(item => item.ID === newId && item !== allData.find(dataItem => dataItem.ID === oldId));
+                    if (existingBug) {
+                        alert(`Bug ID ${newId} already exists. Please choose a different ID.`);
+                        this.innerText = oldId;
+                        return;
+                    }
+                });
+                
+                updateColors();
+                
+                return div;
+            }
+            
+            function updateSummaryMetrics() {
+                const testCases = allData.filter(row => row.Type === 'Test Case');
+                const bugs = allData.filter(row => row.Type === 'Bug Report');
+
+                // Basic metrics
+                const totalTestCases = testCases.length;
+                const executedTests = testCases.filter(tc => tc.Status.toLowerCase() === 'pass' || tc.Status.toLowerCase() === 'fail').length;
+                const passedTests = testCases.filter(tc => tc.Status.toLowerCase() === 'pass').length;
+                const failedTests = testCases.filter(tc => tc.Status.toLowerCase() === 'fail').length;
+                const pendingTests = testCases.filter(tc => tc.Status.toLowerCase() === 'to be executed').length;
+                
+                
+                // Bug metrics
+                const totalBugs = bugs.length;
+                const criticalBugs = bugs.filter(bug => bug['Priority/Severity'].toLowerCase() === 'critical').length;
+                const highBugs = bugs.filter(bug => bug['Priority/Severity'].toLowerCase() === 'high').length;
+                const mediumBugs = bugs.filter(bug => bug['Priority/Severity'].toLowerCase() === 'medium').length;
+                const lowBugs = bugs.filter(bug => bug['Priority/Severity'].toLowerCase() === 'low').length;
+                
+                // Debug counts
+                console.log('Dashboard metrics update:');
+                console.log('Total test cases:', totalTestCases);
+                console.log('Total bugs:', totalBugs);
+                console.log('Critical bugs:', criticalBugs);
+                
+
+                // Platform breakdown
+                const crmTestCases = testCases.filter(tc => tc.Platform === 'CRM');
+                const webTestCases = testCases.filter(tc => tc.Platform === 'Client');
+                
+                // CRM specific metrics
+                const crmExecuted = crmTestCases.filter(tc => tc.Status.toLowerCase() === 'pass' || tc.Status.toLowerCase() === 'fail').length;
+                const crmPassed = crmTestCases.filter(tc => tc.Status.toLowerCase() === 'pass').length;
+                const crmPassRate = crmExecuted > 0 ? Math.round((crmPassed / crmExecuted) * 100) : 0;
+                
+                // Web specific metrics
+                const webExecuted = webTestCases.filter(tc => tc.Status.toLowerCase() === 'pass' || tc.Status.toLowerCase() === 'fail').length;
+                const webPassed = webTestCases.filter(tc => tc.Status.toLowerCase() === 'pass').length;
+                const webPassRate = webExecuted > 0 ? Math.round((webPassed / webExecuted) * 100) : 0;
+
+                // Overall pass rate
+                const passRate = executedTests > 0 ? Math.round((passedTests / executedTests) * 100) : 0;
+
+                // Update the summary container
+                const summaryContainer = document.getElementById('summaryMetrics');
+                summaryContainer.innerHTML = `
+                    <!-- Overall Metrics -->
+                    <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-blue-700">${passRate}%</h3>
+                        <p class="metric-label text-blue-600">Overall Pass Rate</p>
+                        <p class="metric-subtitle text-blue-500">${passedTests}/${executedTests} executed</p>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-green-700">${totalTestCases}</h3>
+                        <p class="metric-label text-green-600">Total Test Cases</p>
+                        <p class="metric-subtitle text-green-500">${pendingTests} pending</p>
+                    </div>
+                    
+                    <div class="bg-red-50 border border-red-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-red-700">${failedTests}</h3>
+                        <p class="metric-label text-red-600">Failed Tests</p>
+                        <p class="metric-subtitle text-red-500">${executedTests > 0 ? Math.round((failedTests/executedTests)*100) : 0}% of executed</p>
+                    </div>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-yellow-700">${totalBugs}</h3>
+                        <p class="metric-label text-yellow-600">Total Bugs</p>
+                        <p class="metric-subtitle text-yellow-500">${criticalBugs} critical</p>
+                    </div>
+                    
+                    <!-- Platform Specific Metrics -->
+                    <div class="bg-purple-50 border border-purple-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-purple-700">${crmTestCases.length}</h3>
+                        <p class="metric-label text-purple-600">CRM Test Cases</p>
+                        <p class="metric-subtitle text-purple-500">${crmPassRate}% pass rate</p>
+                    </div>
+                    
+                    <div class="bg-indigo-50 border border-indigo-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-indigo-700">${webTestCases.length}</h3>
+                        <p class="metric-label text-indigo-600">Web Test Cases</p>
+                        <p class="metric-subtitle text-indigo-500">${webPassRate}% pass rate</p>
+                    </div>
+                    
+                    <div class="bg-orange-50 border border-orange-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-orange-700">${criticalBugs}</h3>
+                        <p class="metric-label text-orange-600">Critical Bug Reports</p>
+                        <p class="metric-subtitle text-orange-500">${highBugs} high priority bugs</p>
+                    </div>
+                    
+                    <div class="bg-gray-50 border border-gray-200 p-5 rounded-lg text-center metric-card">
+                        <h3 class="metric-value text-gray-700">${mediumBugs + lowBugs}</h3>
+                        <p class="metric-label text-gray-600">Medium/Low Bugs</p>
+                        <p class="metric-subtitle text-gray-500">${mediumBugs} medium, ${lowBugs} low</p>
+                    </div>
+                `;
+            }
+
+            function saveIndividualBug(bugId) {
+                console.log("Saving individual bug:", bugId);
+                
+                // Sync data from DOM first
+                syncDataFromDOM();
+                
+                // Auto-detect and update platform based on related test case
+                const bugIndex = allData.findIndex(item => item.ID === bugId);
+                if (bugIndex !== -1) {
+                    const bug = allData[bugIndex];
+                    const detectedPlatform = detectPlatformFromTestCase(bug['Related Test Case']);
+                    
+                    // Update platform if it was auto-detected or if it's different
+                    if (!bug.Platform || bug.Platform !== detectedPlatform) {
+                        allData[bugIndex].Platform = detectedPlatform;
+                        console.log(`Auto-detected platform for bug ${bugId}: ${detectedPlatform}`);
+                    }
+                }
+                
+                // Use the allData array directly
+                const csv = Papa.unparse(allData);
+                
+                fetch('/save-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: csv })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Show success feedback for this specific bug
+                        const saveButton = document.querySelector(`[data-id="${bugId}"].save-bug`);
+                        if (saveButton) {
+                            const originalText = saveButton.innerHTML;
+                            saveButton.innerHTML = '<i class="fas fa-check mr-1"></i>Saved!';
+                            saveButton.classList.remove('text-green-600', 'hover:text-green-800', 'border-green-300');
+                            saveButton.classList.add('text-green-700', 'bg-green-100', 'border-green-400');
+                            
+                            // Reset after 2 seconds
+                            setTimeout(() => {
+                                saveButton.innerHTML = originalText;
+                                saveButton.classList.remove('text-green-700', 'bg-green-100', 'border-green-400');
+                                saveButton.classList.add('text-green-600', 'hover:text-green-800', 'border-green-300');
+                            }, 2000);
+                        }
+                    } else {
+                        alert('Error saving bug report: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('An error occurred while saving the bug report.');
+                });
+            }
+
+            function saveIndividualTestCase(testCaseId) {
+                console.log("Saving individual test case:", testCaseId);
+                
+                // Sync data from DOM first
+                syncDataFromDOM();
+                
+                // Use the allData array directly
+                const csv = Papa.unparse(allData);
+                
+                fetch('/save-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: csv })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Show success feedback for this specific test case
+                        const saveButton = document.querySelector(`[data-id="${testCaseId}"].save-testcase`);
+                        if (saveButton) {
+                            const originalText = saveButton.innerHTML;
+                            saveButton.innerHTML = '<i class="fas fa-check"></i>';
+                            saveButton.classList.remove('text-green-600', 'hover:text-green-800', 'border-green-300');
+                            saveButton.classList.add('text-green-700', 'bg-green-100', 'border-green-400');
+                            
+                            // Reset after 2 seconds
+                            setTimeout(() => {
+                                saveButton.innerHTML = originalText;
+                                saveButton.classList.remove('text-green-700', 'bg-green-100', 'border-green-400');
+                                saveButton.classList.add('text-green-600', 'hover:text-green-800', 'border-green-300');
+                            }, 2000);
+                        }
+                    } else {
+                        alert('Error saving test case: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('An error occurred while saving the test case.');
+                });
+            }
+
+            function saveData() {
+                console.log("Starting saveData function");
+                console.log("Saving all data from allData array:", allData.length, "items");
+                
+                // Use the allData array directly instead of scraping DOM
+                // This ensures we save ALL data, not just the currently visible page
+                const csv = Papa.unparse(allData);
+                console.log("Generated CSV from allData:", csv.substring(0, 200) + "...");
+                console.log("Sample item structure:", allData[0]);
+                
+                console.log("Sending data to server...");
+                fetch('/save-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data: csv })
+                })
+                .then(response => {
+                    console.log("Server response status:", response.status);
+                    return response.json();
+                })
+                .then(result => {
+                    console.log("Server response:", result);
+                    if (result.success) {
+                        console.log("Data saved successfully!");
+                        alert('Data saved successfully!');
+                    } else {
+                        console.error("Error saving data:", result.error);
+                        alert('Error saving data: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('An error occurred while saving data.');
+                });
+            }
+
+            function addTestCase() {
+                // Prompt user to select platform
+                const platform = confirm('Select platform for new test case:\n\nOK = CRM\nCancel = Web') ? 'CRM' : 'Client';
+                
+                // Find the highest existing test case ID number for the specific platform
+                let maxTestCaseNumber = 0;
+                const platformPrefix = platform === 'CRM' ? 'CRM-TC' : 'WEB-TC';
+                
+                allData.forEach(item => {
+                    if (item.Type === 'Test Case' && item.Platform === platform && item.ID && item.ID.startsWith(platformPrefix)) {
+                        const number = parseInt(item.ID.replace(platformPrefix, ''));
+                        if (!isNaN(number) && number > maxTestCaseNumber) {
+                            maxTestCaseNumber = number;
+                        }
+                    }
+                });
+                
+                const newTestCase = {
+                    Type: 'Test Case',
+                    Platform: platform,
+                    Section: 'New Section',
+                    ID: `${platformPrefix}${String(maxTestCaseNumber + 1).padStart(3, '0')}`,
+                    'Title/Objective': 'New Test Case Objective',
+                    'Test Steps': '',
+                    'Test Data': '',
+                    'Expected Result': '',
+                    'Actual Result': '',
+                    'Priority/Severity': 'Medium',
+                    Status: 'To Be Executed',
+                    Description: '',
+                    Evidence: '',
+                    'Related Test Case': ''
+                };
+                
+                allData.push(newTestCase);
+                console.log('Added new test case:', newTestCase.ID, 'Priority:', newTestCase['Priority/Severity']);
+                populateReport(allData);
+                
+                // Refresh all bug report dropdowns to include the new test case
+                refreshAllBugReportDropdowns();
+            }
+
+            function addBugReport() {
+                // Prompt user to select platform
+                const platform = confirm('Select platform for new bug report:\n\nOK = CRM\nCancel = Web') ? 'CRM' : 'Client';
+                const platformPrefix = platform === 'CRM' ? 'CRM-BUG' : 'WEB-BUG';
+                
+                // Find the highest existing bug ID number for the selected platform
+                let maxBugNumber = 0;
+                allData.forEach(item => {
+                    if (item.Type === 'Bug Report' && item.Platform === platform && item.ID && item.ID.startsWith(platformPrefix)) {
+                        const number = parseInt(item.ID.replace(platformPrefix, ''));
+                        if (!isNaN(number) && number > maxBugNumber) {
+                            maxBugNumber = number;
+                        }
+                    }
+                });
+                
+                const newBugReport = {
+                    Type: 'Bug Report',
+                    Platform: platform,
+                    ID: `${platformPrefix}${String(maxBugNumber + 1).padStart(3, '0')}`,
+                    'Title/Objective': 'New Bug Report Title',
+                    'Priority/Severity': 'Medium',
+                    Status: 'Open',
+                    Description: 'New Bug Report Description',
+                    'Related Test Case': ''
+                };
+                
+                allData.push(newBugReport);
+                populateReport(allData);
+            }
+
+            function moveItem(itemId, direction) {
+                const currentIndex = allData.findIndex(item => item.ID === itemId);
+                if (currentIndex === -1) return;
+
+                const item = allData[currentIndex];
+                const itemType = item.Type;
+                const itemPlatform = item.Platform;
+
+                // Find all items of the same type and platform
+                const sameTypeItems = allData.filter(data => data.Type === itemType && data.Platform === itemPlatform);
+                const sameTypeIndex = sameTypeItems.findIndex(data => data.ID === itemId);
+                
+                if (sameTypeIndex === -1) return;
+
+                const newSameTypeIndex = direction === 'up' ? sameTypeIndex - 1 : sameTypeIndex + 1;
+                
+                // Check bounds within the same type/platform group
+                if (newSameTypeIndex < 0 || newSameTypeIndex >= sameTypeItems.length) return;
+
+                // Find the actual indices in the allData array
+                const allDataIndices = allData.map((data, index) => 
+                    data.Type === itemType && data.Platform === itemPlatform ? index : -1
+                ).filter(index => index !== -1);
+
+                const currentAllDataIndex = allDataIndices[sameTypeIndex];
+                const newAllDataIndex = allDataIndices[newSameTypeIndex];
+
+                // Swap items in allData
+                const temp = allData[currentAllDataIndex];
+                allData[currentAllDataIndex] = allData[newAllDataIndex];
+                allData[newAllDataIndex] = temp;
+
+                // Regenerate IDs for the same type/platform group to maintain sequential order
+                regenerateIdsForGroup(itemType, itemPlatform);
+
+                // Refresh the display
+                populateReport(allData);
+                
+                // Refresh all bug report dropdowns after data is loaded
+                setTimeout(() => {
+                    refreshAllBugReportDropdowns();
+                }, 100);
+            }
+
+            function regenerateIdsForGroup(itemType, itemPlatform) {
+                // Get all items of the same type and platform
+                const groupItems = allData.filter(data => data.Type === itemType && data.Platform === itemPlatform);
+                
+                // Sort by current position in allData array
+                const groupIndices = allData.map((data, index) => 
+                    data.Type === itemType && data.Platform === itemPlatform ? index : -1
+                ).filter(index => index !== -1);
+                
+                // Regenerate IDs sequentially
+                groupItems.forEach((item, index) => {
+                    const allDataIndex = groupIndices[index];
+                    if (itemType === 'Test Case') {
+                        const platformPrefix = itemPlatform === 'CRM' ? 'CRM-TC' : 'WEB-TC';
+                        allData[allDataIndex].ID = `${platformPrefix}${String(index + 1).padStart(3, '0')}`;
+                    } else if (itemType === 'Bug Report') {
+                        const platformPrefix = itemPlatform === 'CRM' ? 'CRM-BUG' : 'WEB-BUG';
+                        allData[allDataIndex].ID = `${platformPrefix}${String(index + 1).padStart(3, '0')}`;
+                    }
+                });
+            }
+
+            function insertItemAfter(itemId, itemType, platform) {
+                const currentIndex = allData.findIndex(item => item.ID === itemId);
+                if (currentIndex === -1) return;
+
+                // Find the next item of the same type and platform
+                const sameTypeItems = allData.filter(data => data.Type === itemType && data.Platform === platform);
+                const sameTypeIndex = sameTypeItems.findIndex(data => data.ID === itemId);
+                
+                if (sameTypeIndex === -1) return;
+
+                // Create new item
+                let newItem;
+                if (itemType === 'Test Case') {
+                    newItem = {
+                        Type: 'Test Case',
+                        Platform: platform,
+                        Section: 'New Section',
+                        ID: '', // Will be set after insertion
+                        'Title/Objective': 'New Test Case Objective',
+                        'Test Steps': '',
+                        'Test Data': '',
+                        'Expected Result': '',
+                        'Actual Result': '',
+                        'Priority/Severity': 'Medium',
+                        Status: 'To Be Executed',
+                        Description: '',
+                        Evidence: '',
+                        'Related Test Case': ''
+                    };
+                } else if (itemType === 'Bug Report') {
+                    newItem = {
+                        Type: 'Bug Report',
+                        Platform: platform,
+                        ID: '', // Will be set after insertion
+                        'Title/Objective': 'New Bug Report Title',
+                        'Priority/Severity': 'Medium',
+                        Status: 'Open',
+                        Description: 'New Bug Report Description',
+                        'Related Test Case': ''
+                    };
+                }
+
+                // Find insertion point
+                const allDataIndices = allData.map((data, index) => 
+                    data.Type === itemType && data.Platform === platform ? index : -1
+                ).filter(index => index !== -1);
+
+                const insertAfterIndex = allDataIndices[sameTypeIndex];
+                
+                // Insert the new item
+                allData.splice(insertAfterIndex + 1, 0, newItem);
+
+                // Regenerate IDs for the group
+                regenerateIdsForGroup(itemType, platform);
+
+                // Refresh the display
+                populateReport(allData);
+                
+                // Refresh all bug report dropdowns after data is loaded
+                setTimeout(() => {
+                    refreshAllBugReportDropdowns();
+                }, 100);
+            }
+
+            function insertItemBefore(itemId, itemType, platform) {
+                const currentIndex = allData.findIndex(item => item.ID === itemId);
+                if (currentIndex === -1) return;
+
+                // Find the current item of the same type and platform
+                const sameTypeItems = allData.filter(data => data.Type === itemType && data.Platform === platform);
+                const sameTypeIndex = sameTypeItems.findIndex(data => data.ID === itemId);
+                
+                if (sameTypeIndex === -1) return;
+
+                // Create new item
+                let newItem;
+                if (itemType === 'Test Case') {
+                    newItem = {
+                        Type: 'Test Case',
+                        Platform: platform,
+                        Section: 'New Section',
+                        ID: '', // Will be set after insertion
+                        'Title/Objective': 'New Test Case Objective',
+                        'Test Steps': '',
+                        'Test Data': '',
+                        'Expected Result': '',
+                        'Actual Result': '',
+                        'Priority/Severity': 'Medium',
+                        Status: 'To Be Executed',
+                        Description: '',
+                        Evidence: '',
+                        'Related Test Case': ''
+                    };
+                } else if (itemType === 'Bug Report') {
+                    newItem = {
+                        Type: 'Bug Report',
+                        Platform: platform,
+                        ID: '', // Will be set after insertion
+                        'Title/Objective': 'New Bug Report Title',
+                        'Priority/Severity': 'Medium',
+                        Status: 'Open',
+                        Description: 'New Bug Report Description',
+                        'Related Test Case': ''
+                    };
+                }
+
+                // Find insertion point
+                const allDataIndices = allData.map((data, index) => 
+                    data.Type === itemType && data.Platform === platform ? index : -1
+                ).filter(index => index !== -1);
+
+                const insertBeforeIndex = allDataIndices[sameTypeIndex];
+                
+                // Insert the new item
+                allData.splice(insertBeforeIndex, 0, newItem);
+
+                // Regenerate IDs for the group
+                regenerateIdsForGroup(itemType, platform);
+
+                // Refresh the display
+                populateReport(allData);
+                
+                // Refresh all bug report dropdowns after data is loaded
+                setTimeout(() => {
+                    refreshAllBugReportDropdowns();
+                }, 100);
+            }
+
+            function populateTestCasesDropdown(bugCard, selectedValue) {
+                const dropdown = bugCard.querySelector('.related-test-case');
+                if (!dropdown) return;
+                
+                // Get only test cases with "Fail" status from allData
+                const testCases = allData.filter(item => 
+                    item.Type === 'Test Case' && 
+                    (item.Status === 'Fail' || item.Status === 'FAIL')
+                );
+                
+                // Clear existing options except the first one
+                dropdown.innerHTML = '<option value="">Select a test case...</option>';
+                
+                // Add test cases grouped by platform
+                const crmTestCases = testCases.filter(tc => tc.Platform === 'CRM');
+                const clientTestCases = testCases.filter(tc => tc.Platform === 'Client');
+                
+                if (crmTestCases.length > 0) {
+                    const crmGroup = document.createElement('optgroup');
+                    crmGroup.label = 'CRM Test Cases (Failed)';
+                    crmTestCases.forEach(tc => {
+                        const option = document.createElement('option');
+                        option.value = tc.ID;
+                        option.textContent = `${tc.ID} - ${tc['Title/Objective']}`;
+                        if (tc.ID === selectedValue) {
+                            option.selected = true;
+                        }
+                        crmGroup.appendChild(option);
+                    });
+                    dropdown.appendChild(crmGroup);
+                }
+                
+                if (clientTestCases.length > 0) {
+                    const clientGroup = document.createElement('optgroup');
+                    clientGroup.label = 'Client Test Cases (Failed)';
+                    clientTestCases.forEach(tc => {
+                        const option = document.createElement('option');
+                        option.value = tc.ID;
+                        option.textContent = `${tc.ID} - ${tc['Title/Objective']}`;
+                        if (tc.ID === selectedValue) {
+                            option.selected = true;
+                        }
+                        clientGroup.appendChild(option);
+                    });
+                    dropdown.appendChild(clientGroup);
+                }
+                
+                // If no failed test cases, show a message
+                if (testCases.length === 0) {
+                    const noFailuresOption = document.createElement('option');
+                    noFailuresOption.value = '';
+                    noFailuresOption.textContent = 'No failed test cases available';
+                    noFailuresOption.disabled = true;
+                    dropdown.appendChild(noFailuresOption);
+                }
+            }
+
+            function refreshAllBugReportDropdowns() {
+                const bugCards = document.querySelectorAll('.bug-card');
+                bugCards.forEach(card => {
+                    const dropdown = card.querySelector('.related-test-case');
+                    if (dropdown) {
+                        const currentValue = dropdown.value;
+                        populateTestCasesDropdown(card, currentValue);
+                    }
+                });
+            }
+
+            function updatePaginationControls() {
+                // Update pagination
+                const testCases = allData.filter(item => item.Type === 'Test Case');
+                const totalPages = Math.ceil(testCases.length / pageSize);
+                
+                document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prev-page').disabled = currentPage <= 1;
+                document.getElementById('next-page').disabled = currentPage >= totalPages;
+            }
+
+            function updateMoveButtonStates() {
+                allData.forEach((item) => {
+                    const itemType = item.Type;
+                    const itemPlatform = item.Platform;
+                    
+                    // Find all items of the same type and platform
+                    const sameTypeItems = allData.filter(data => data.Type === itemType && data.Platform === itemPlatform);
+                    const sameTypeIndex = sameTypeItems.findIndex(data => data.ID === item.ID);
+                    
+                    const moveUpButtons = document.querySelectorAll(`[data-id="${item.ID}"].move-up`);
+                    const moveDownButtons = document.querySelectorAll(`[data-id="${item.ID}"].move-down`);
+                    
+                    // Disable/enable move up buttons
+                    moveUpButtons.forEach(btn => {
+                        if (sameTypeIndex === 0) {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-50', 'cursor-not-allowed');
+                            btn.classList.remove('hover:text-blue-700');
+                        } else {
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            btn.classList.add('hover:text-blue-700');
+                        }
+                    });
+                    
+                    // Disable/enable move down buttons
+                    moveDownButtons.forEach(btn => {
+                        if (sameTypeIndex === sameTypeItems.length - 1) {
+                            btn.disabled = true;
+                            btn.classList.add('opacity-50', 'cursor-not-allowed');
+                            btn.classList.remove('hover:text-blue-700');
+                        } else {
+                            btn.disabled = false;
+                            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            btn.classList.add('hover:text-blue-700');
+                        }
+                    });
+                });
+            }
+            
+            function migrateOldTestCaseIds() {
+                let migratedCount = 0;
+                const migrationLog = [];
+                
+                allData.forEach((item, index) => {
+                    if (item.Type === 'Test Case' && item.ID && item.ID.startsWith('TC') && !item.ID.includes('-')) {
+                        const oldId = item.ID;
+                        const platform = item.Platform;
+                        const platformPrefix = platform === 'CRM' ? 'CRM-TC' : 'WEB-TC';
+                        
+                        // Extract the number from the old ID
+                        const number = oldId.replace('TC', '');
+                        
+                        // Create new ID with platform prefix
+                        const newId = `${platformPrefix}${number}`;
+                        
+                        // Update the ID
+                        allData[index].ID = newId;
+                        migratedCount++;
+                        
+                        migrationLog.push(`${oldId} → ${newId} (${platform})`);
+                    }
+                });
+                
+                if (migratedCount > 0) {
+                    // Refresh the display to show updated IDs
+                    populateReport(allData);
+                    
+                    // Show migration results
+                    const logMessage = migrationLog.join('\n');
+                    alert(`Migration completed!\n\nMigrated ${migratedCount} test case IDs:\n\n${logMessage}\n\nData has been updated and saved.`);
+                    
+                    // Auto-save the migrated data
+                    saveAllData();
+                } else {
+                    alert('No old test case IDs found to migrate. All test cases already use the new platform-specific format.');
+                }
+            }
+
+            function detectPlatformFromTestCase(testCaseId) {
+                if (!testCaseId) return 'Client'; // Default to Client if no test case
+                
+                // Find the test case in allData
+                const testCase = allData.find(item => item.ID === testCaseId);
+                if (testCase) {
+                    return testCase.Platform || 'Client';
+                }
+                
+                // If test case not found, try to determine from ID format
+                if (testCaseId.startsWith('CRM-TC')) {
+                    return 'CRM';
+                } else if (testCaseId.startsWith('WEB-TC')) {
+                    return 'Client';
+                } else if (testCaseId.startsWith('TC')) {
+                    // Old format - need to check the test case data
+                    const oldTestCase = allData.find(item => item.ID === testCaseId && item.Type === 'Test Case');
+                    return oldTestCase ? oldTestCase.Platform || 'Client' : 'Client';
+                }
+                
+                return 'Client'; // Default fallback
+            }
+
+            function migrateAndFixBugReports() {
+                let migratedCount = 0;
+                let fixedCount = 0;
+                const migrationLog = [];
+                const fixLog = [];
+                
+                // First, fix any bug reports with missing or invalid IDs
+                allData.forEach((item, index) => {
+                    if (item.Type === 'Bug Report') {
+                        if (!item.ID || item.ID.trim() === '' || !item.ID.startsWith('BUG-')) {
+                            // Auto-detect platform from related test case
+                            const detectedPlatform = detectPlatformFromTestCase(item['Related Test Case']);
+                            const platform = item.Platform || detectedPlatform;
+                            const platformPrefix = platform === 'CRM' ? 'CRM-BUG' : 'WEB-BUG';
+                            
+                            // Update the platform if it was auto-detected
+                            if (!item.Platform) {
+                                allData[index].Platform = detectedPlatform;
+                            }
+                            
+                            // Find the next available ID for this platform
+                            let maxNumber = 0;
+                            allData.forEach(bug => {
+                                if (bug.Type === 'Bug Report' && bug.Platform === platform && bug.ID && bug.ID.startsWith(platformPrefix)) {
+                                    const number = parseInt(bug.ID.replace(platformPrefix, ''));
+                                    if (!isNaN(number) && number > maxNumber) {
+                                        maxNumber = number;
+                                    }
+                                }
+                            });
+                            
+                            const newId = `${platformPrefix}${String(maxNumber + 1).padStart(3, '0')}`;
+                            const oldId = item.ID || 'MISSING';
+                            
+                            allData[index].ID = newId;
+                            fixedCount++;
+                            fixLog.push(`${oldId} → ${newId} (${platform}) - ${item['Title/Objective'] || 'Untitled'}`);
+                        }
+                    }
+                });
+                
+                // Then, migrate old BUG-XXX format to platform-specific format
+                allData.forEach((item, index) => {
+                    if (item.Type === 'Bug Report' && item.ID && item.ID.startsWith('BUG-') && !item.ID.includes('CRM-') && !item.ID.includes('WEB-')) {
+                        const oldId = item.ID;
+                        // Auto-detect platform from related test case
+                        const detectedPlatform = detectPlatformFromTestCase(item['Related Test Case']);
+                        const platform = item.Platform || detectedPlatform;
+                        const platformPrefix = platform === 'CRM' ? 'CRM-BUG' : 'WEB-BUG';
+                        
+                        // Update the platform if it was auto-detected
+                        if (!item.Platform) {
+                            allData[index].Platform = detectedPlatform;
+                        }
+                        
+                        // Find the next available ID for this platform
+                        let maxNumber = 0;
+                        allData.forEach(bug => {
+                            if (bug.Type === 'Bug Report' && bug.Platform === platform && bug.ID && bug.ID.startsWith(platformPrefix)) {
+                                const number = parseInt(bug.ID.replace(platformPrefix, ''));
+                                if (!isNaN(number) && number > maxNumber) {
+                                    maxNumber = number;
+                                }
+                            }
+                        });
+                        
+                        const newId = `${platformPrefix}${String(maxNumber + 1).padStart(3, '0')}`;
+                        
+                        // Update the ID
+                        allData[index].ID = newId;
+                        migratedCount++;
+                        
+                        migrationLog.push(`${oldId} → ${newId} (${platform}) - ${item['Title/Objective'] || 'Untitled'}`);
+                    }
+                });
+                
+                if (migratedCount > 0 || fixedCount > 0) {
+                    // Refresh the display to show updated IDs
+                    populateReport(allData);
+                    
+                    // Show migration results
+                    let message = `Bug Report Migration completed!\n\n`;
+                    if (fixedCount > 0) {
+                        message += `Fixed ${fixedCount} bug reports with missing/invalid IDs:\n${fixLog.join('\n')}\n\n`;
+                    }
+                    if (migratedCount > 0) {
+                        message += `Migrated ${migratedCount} bug report IDs:\n${migrationLog.join('\n')}\n\n`;
+                    }
+                    message += `Data has been updated and saved.`;
+                    
+                    alert(message);
+                    
+                    // Auto-save the migrated data
+                    saveAllData();
+                } else {
+                    alert('No bug reports need migration. All bug reports already use the correct format.');
+                }
+            }
+
+            function exportData(type) {
+                const dataToExport = allData.filter(row => row.Type === type);
+                const csv = Papa.unparse(dataToExport);
+                
+                const a = document.createElement('a');
+                const mimeType = 'text/csv;charset=utf-8;';
+                const fileName = type === 'Test Case' ? 'test_cases.csv' : 'bug_reports.csv';
+                
+                a.href = 'data:' + mimeType + ',' + encodeURIComponent(csv);
+                a.setAttribute('download', fileName);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+
+            function exportXlsx() {
+                try {
+                    // Convert allData to CSV format for the backend
+                    const csv = Papa.unparse(allData);
+                    
+                    // Send data to backend for XLSX generation
+                    fetch('/export-xlsx', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ data: csv })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        // Create download link
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `testing_report_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    })
+                    .catch(error => {
+                        console.error('Error exporting XLSX:', error);
+                        alert('Error exporting XLSX file. Please try again.');
+                    });
+                } catch (error) {
+                    console.error('Error preparing XLSX export:', error);
+                    alert('Error preparing XLSX export. Please try again.');
+                }
+            }
+            
+            function importData(event) {
+                const file = event.target.files[0];
+                const importType = event.target.dataset.importType;
+                if (file) {
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            const newData = results.data;
+                            // Filter out the old data of the same type and merge
+                            allData = allData.filter(row => row.Type !== importType);
+                            allData = allData.concat(newData);
+                            populateReport(allData);
+                            alert(importType + 's imported successfully!');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
